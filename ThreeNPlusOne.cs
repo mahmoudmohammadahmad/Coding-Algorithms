@@ -6,7 +6,7 @@ namespace Coding_Algorithms
 {
     class ThreeNPlusOne
     {
-        static void Main(string[] args)
+        static void Main1(string[] args)
         {
 
             // Reading two integers from the command line
