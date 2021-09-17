@@ -5,7 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Coding_Algorithms.NiceMilk;
 namespace Coding_Algorithms
-{
+{ // steps fo solving the Nice Milk Problem (10117):
+    //step1- identifying all polygons consisting of 4 vertices each, for each of the sides of the original polygon:
+    //2 vertices making the side + two vertices that are the intersection points of the line parallel to the side  and 
+    // the two sides adjacent to that side, make a new polygon.
+    //step2-ordering the resulting polygons by polygon area.
+    //step3-starting from the largest area we start adding polygon areas according to the max number of allowed dips.
+    //step4-starting from the last area added, we subtract from its area all the intersections areas that could have occured 
+    //with any of the previous polygon areas.
+
     class SolveNiceMilk
     {
         static void Main(string[] args)
@@ -55,18 +63,32 @@ namespace Coding_Algorithms
 
             ConvexPolygon2D poly = new ConvexPolygon2D(gh.orderClockWise(vertices.ToArray()));
 
+            //preparation for step1
             for (int i = 0; i < poly.Corners.Length; i++)
             {
-
+                // processing four points at a time
+                // p2-p3 is the side we want to find its parallel at distance HeightBowel
+                //p1-p2,p3-p4 are two sides we want to find the intersection of the parallel line with them
                 p1 = poly.Corners[i % poly.Corners.Length];
                 p2 = poly.Corners[(i + 1) % poly.Corners.Length];
                 p3 = poly.Corners[(i + 2) % poly.Corners.Length];
                 p4 = poly.Corners[(i + 3) % poly.Corners.Length];
+
+                //coordinates for four points located on two lines parallel to p2p3
                 double x1p2=0, x2p2=0, x1p3=0, x2p3 = 0;
                 double y1p2 = 0, y2p2 = 0, y1p3 = 0, y2p3 = 0;
+
+                //slope opf p2p3
                 double slope = (p2.Y - p3.Y) / (p2.X - p3.X);
+
+                // if p2p3 is not parallel to the y-axis or the x-axis
                 if (slope != 0 && slope != double.PositiveInfinity && slope != double.NegativeInfinity)
                 {
+                    //we solve using an equation of two circles one centered at p2 with a radius of HeightBowel
+                    //the other centered at p3 with a radius of HeightBowel
+                    // then we substitute the resulting four x coordinates in the equation of the 
+                    //line parallel to p2p3 which has slope -1/slope, to get to the four y coordinates
+                    // the result is two parallel lines one of them is outside the polygon and therfore rejected
                     x1p2 = p2.X + Math.Sqrt((HeightBowel * HeightBowel) / (1 + (1 / (slope * slope))));
                     x2p2 = p2.X - Math.Sqrt((HeightBowel * HeightBowel) / (1 + (1 / (slope * slope))));
                     x1p3 = p3.X + Math.Sqrt((HeightBowel * HeightBowel) / (1 + (1 /( slope * slope))));
@@ -102,7 +124,9 @@ namespace Coding_Algorithms
                     x2p3 = p3.X- HeightBowel;
                 }
 
-                    Point2D intersect1, intersect2, intersect3, intersect4, intersect5, intersect6, intersect7, intersect8, intersect9;
+                //intersection points
+                Point2D intersect1, intersect2, intersect3, intersect4, intersect5, intersect6, intersect7, intersect8, intersect9;
+               //temporary polygons intersecting with the main polygon,one of them is rejacted(zero intersection)
                 List<Point2D> FirstIntersectPoly = new List<Point2D>(0);
                 List<Point2D> SecondIntersectPoly = new List<Point2D>(0);
 
@@ -115,11 +139,12 @@ namespace Coding_Algorithms
                 intersect7 = new Point2D(0, 0);
                 intersect8 = new Point2D(0, 0);
                 intersect9 = new Point2D(0, 0);
-                //1
+                
                 intersect1 = gh.GetIntersectionPoint(p1, p2,new Point2D(x1p2,y1p2),new Point2D(x1p3,y1p3),true);
                 intersect2 = gh.GetIntersectionPoint(p3, p4, new Point2D(x1p2, y1p2), new Point2D(x1p3, y1p3), true);
                 intersect3 = gh.GetIntersectionPoint(p2, p3, new Point2D(x1p2, y1p2), new Point2D(x1p3, y1p3), true);
 
+                //no need to calculate this because the line is not parallel, just for checking purpose
                 intersect4 = gh.GetIntersectionPoint(p1, p2, new Point2D(x1p2, y1p2), new Point2D(x2p3, y2p3), true);
                 intersect5 = gh.GetIntersectionPoint(p3, p4, new Point2D(x1p2, y1p2), new Point2D(x2p3, y2p3), true);
                 intersect6 = gh.GetIntersectionPoint(p2, p3, new Point2D(x1p2, y1p2), new Point2D(x2p3, y2p3), true);
@@ -184,51 +209,46 @@ namespace Coding_Algorithms
 
                 checkArea2 = gh.PolygonArea(gh.GetIntersectionPolygons(poly, CheckPoly2));
 
-              //  allpolygonsTemp.Add(p2);
-              //  allpolygonsTemp.Add(p3);
+            //step1
 
                 if (checkArea2 == 0 )
                 {
 
                     allpolygons.Add(new ConvexPolygon2D(gh.orderClockWise(FirstIntersectPoly.ToArray())));
-                    //allpolygonsTemp.Add(intersect1);
-                    //allpolygonsTemp.Add(intersect2);
-                    //Console.WriteLine("X={0},y={1}", intersect1.X, intersect1.Y);
-                    //Console.WriteLine("X={0},y={1}", intersect2.X, intersect2.Y);
+                    
 
                 }
                 else if (checkArea1==0)
                 {
                     allpolygons.Add(new ConvexPolygon2D(gh.orderClockWise(SecondIntersectPoly.ToArray())));
 
-                    //    allpolygonsTemp.Add(intersect3);
-                    //allpolygonsTemp.Add(intersect4);
-                    //Console.WriteLine("X={0},y={1}", intersect3.X, intersect3.Y);
-                    //Console.WriteLine("X={0},y={1}", intersect4.X, intersect4.Y);
+                    
                 }
 
                 FirstIntersectPoly.Clear();
                 SecondIntersectPoly.Clear();
-           // allpolygons.Add(new ConvexPolygon2D(gh.orderClockWise(allpolygonsTemp.ToArray())));
-          //      allpolygonsTemp.Clear();
+           
             }
+
+            //step2
             ConvexPolygon2D [] sorted =  allpolygons.OrderBy(v => (gh.PolygonArea(v))).ToArray();
 
-            
-            for (int i = 0; i < sorted.Length; i++)
-            {
-                Console.WriteLine(gh.PolygonArea(sorted[i]));
-            }
+           
             double maxArea = 0;
+
+            //step3
             for (int i = sorted.Length - 1; i > sorted.Length - 1 - NumDips; i--)
             {
-                maxArea += gh.PolygonArea(sorted[i]) ;
+                maxArea += gh.PolygonArea(sorted[i]) ;//adding all areas accourding to NumDips and starting from the largest area
             }
+
+            //step4
             for (int i = sorted.Length - NumDips; i < sorted.Length ; i++)
             {
                
                 for (int j = i; j < sorted.Length-1; j++)
                 {
+                    //subtracting intersection areas that were previously added
                     maxArea -= gh.PolygonArea(gh.GetIntersectionPolygons(sorted[i], sorted[j+1]));
                 }
             }
