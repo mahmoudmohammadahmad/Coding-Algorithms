@@ -16,7 +16,7 @@ namespace Coding_Algorithms
 
     class SolveNiceMilk
     {
-        static void Main(string[] args)
+        static void Main3(string[] args)
         {
          
 
